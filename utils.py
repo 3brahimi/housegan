@@ -40,14 +40,14 @@ EXP_ID = random.randint(0, 1000000)
 #     labelMap['bedroom'] = 3
 #     labelMap['bathroom'] = 4
 #     labelMap['restroom'] = 4
-#     labelMap['washing_room'] = 4    
+#     labelMap['washing_room'] = 4
 #     labelMap['office'] = 3
 #     labelMap['closet'] = 6
 #     labelMap['balcony'] = 7
 #     labelMap['corridor'] = 8
 #     labelMap['dining_room'] = 9
 #     labelMap['laundry_room'] = 10
-#     labelMap['PS'] = 10   
+#     labelMap['PS'] = 10
 ROOM_CLASS = {"living_room": 1, "kitchen": 2, "bedroom": 3, "bathroom": 4, "missing": 5, "closet": 6, "balcony": 7, "corridor": 8,
               "dining_room": 9, "laundry_room": 10}
 
@@ -70,7 +70,7 @@ class ColorPalette:
         #self.colorMap = np.random.randint(255, size = (numColors, 3))
         #self.colorMap[0] = 0
 
-        
+
         self.colorMap = np.array([[255, 0, 0],
                                   [0, 255, 0],
                                   [0, 0, 255],
@@ -79,33 +79,33 @@ class ColorPalette:
                                   [255, 0, 255],
                                   [0, 255, 255],
                                   [100, 0, 0],
-                                  [0, 100, 0],                                   
-                                  [255, 255, 0],                                  
+                                  [0, 100, 0],
+                                  [255, 255, 0],
                                   [50, 150, 0],
                                   [200, 255, 255],
                                   [255, 200, 255],
                                   [128, 128, 80],
-                                  [0, 50, 128],                                  
+                                  [0, 50, 128],
                                   [0, 100, 100],
-                                  [0, 255, 128],                                  
+                                  [0, 255, 128],
                                   [0, 128, 255],
-                                  [255, 0, 128],                                  
+                                  [255, 0, 128],
                                   [128, 0, 255],
-                                  [255, 128, 0],                                  
-                                  [128, 255, 0],                                                                    
+                                  [255, 128, 0],
+                                  [128, 255, 0],
         ])
 
         if numColors > self.colorMap.shape[0]:
             self.colorMap = np.random.randint(255, size = (numColors, 3))
             pass
-        
+
         return
 
     def getColorMap(self):
         return self.colorMap
-    
+
     def getColor(self, index):
-        if index >= colorMap.shape[0]:
+        if index >= self.colorMap.shape[0]:
             return np.random.randint(255, size = (3))
         else:
             return self.colorMap[index]
@@ -176,9 +176,9 @@ def drawWallMask(walls, width, height, thickness=3, indexed=False):
 
 def extractCornersFromHeatmaps(heatmaps, heatmapThreshold=0.5, numPixelsThreshold=5, returnRanges=True):
     """Extract corners from heatmaps"""
-    from skimage import measure 
+    from skimage import measure
     print(heatmaps.shape)
-    
+
     heatmaps = (heatmaps > heatmapThreshold).astype(np.float32)
     orientationPoints = []
     #kernel = np.ones((3, 3), np.float32)
@@ -413,13 +413,13 @@ def calcLineDirectionPoints(points, line):
   return calcLineDirection((point_1, point_2))
 
 def open_png(im_path, im_size=512):
-	
+
 	# open graph image
 	png = Image.open(im_path)
 	im = Image.new("RGB", png.size, (255, 255, 255))
 	im.paste(png, mask=png.split()[3])
 	w, h = im.size
-	
+
     # pad graph images
 	a = h/w
 	if w > h:
@@ -434,7 +434,7 @@ def open_png(im_path, im_size=512):
 	padding = (delta_w//2, delta_h//2, delta_w-(delta_w//2), delta_h-(delta_h//2))
 	im = ImageOps.expand(im, padding, fill='white')
 	im_arr = np.array(im)
-	
+
 	return im_arr
 
 def draw_graph(nds, eds, shift, im_size=128):
@@ -454,13 +454,13 @@ def draw_graph(nds, eds, shift, im_size=128):
     for i, p, j in eds:
         if p > 0:
             graph.add_edge(i-shift, j-shift, color='black', penwidth='4')
-    
+
     graph.node_attr['style']='filled'
     graph.layout(prog='dot')
     graph.draw('temp/_temp_{}.png'.format(EXP_ID))
 
     # Get array
-    png_arr = open_png('temp/_temp_{}.png'.format(EXP_ID), im_size=im_size) 
+    png_arr = open_png('temp/_temp_{}.png'.format(EXP_ID), im_size=im_size)
     im_graph_tensor = torch.FloatTensor(png_arr.transpose(2, 0, 1)/255.0)
     return im_graph_tensor
 
@@ -469,17 +469,17 @@ def bb_to_img(bbs, graphs, room_to_sample, triple_to_sample, boundary_bb=None, m
 	nodes, triples = graphs
 	bbs = np.array(bbs)
 	for k in range(bbs.shape[0]):
-		
+
 		# Draw graph image
 		inds = torch.nonzero(triple_to_sample == k)[:, 0]
 		tps = triples[inds]
 		inds = torch.nonzero(room_to_sample == k)[:, 0]
 		offset = torch.min(inds)
 		nds = nodes[inds]
-		
-		s, p, o = tps.chunk(3, dim=1)          
-		s, p, o = [x.squeeze(1) for x in [s, p, o]] 
-		eds = torch.stack([s, o], dim=1)          
+
+		s, p, o = tps.chunk(3, dim=1)
+		s, p, o = [x.squeeze(1) for x in [s, p, o]]
+		eds = torch.stack([s, o], dim=1)
 		eds = eds-offset
 
 		# Draw BB image
@@ -503,10 +503,10 @@ def bb_to_img(bbs, graphs, room_to_sample, triple_to_sample, boundary_bb=None, m
 	return imgs_tensor
 
 def mask_to_bb(mask):
-    
+
     # get masks pixels
     inds = np.array(np.where(mask>0))
-    
+
     if inds.shape[-1] == 0:
         return [0, 0, 0, 0]
 
@@ -520,7 +520,7 @@ def mask_to_bb(mask):
     w = x1 - x0
     h = y1 - y0
     x, y = x0, y0
-    
+
     return [x0, y0, x1+1, y1+1]
 
 def extract_corners(bb1, bb2, im_size=256):
@@ -590,7 +590,7 @@ def align_bb(bbs_batch, th=0.03):
 				x2, y2, x3, y3 = bb2
 				# horizontals
 				if abs(x2-x0) <= th:
-					x0_avg.append(x2) 
+					x0_avg.append(x2)
 					tracker.append((j, 0, 0))
 				if abs(x3-x0) <= th:
 					x0_avg.append(x3)
@@ -902,7 +902,7 @@ def bb_to_vec(bbs_batch, im_size=256):
 # 			if(pxs.shape[0] == 0):
 # 				print(bbs_im[x-1:x+2, y-1:y+2])
 # 				print(x, y)
-				
+
 # 			_type = get_type(pxs)
 # 			if _type is not None:
 # 				cs_type_sample[_type].append((x, y))
@@ -944,10 +944,10 @@ import torch.nn.functional as F
 import torch.autograd as autograd
 import torch
 def rectangle_renderer(theta, im_size=64):
-    
+
     # scale theta
     theta = theta*im_size
-    
+
     # create meshgrid
     xs = np.arange(im_size)
     ys = np.arange(im_size)
@@ -958,7 +958,7 @@ def rectangle_renderer(theta, im_size=64):
     # conditions
     cond_1 = torch.min(torch.cat([F.relu(ys - theta[:, 1].view(-1, 1, 1)).unsqueeze(-1), torch.ones((theta.shape[0], im_size, im_size, 1)).cuda()], -1), -1)[0] * \
              torch.min(torch.cat([F.relu(theta[:, 3].view(-1, 1, 1) - ys).unsqueeze(-1), torch.ones((theta.shape[0], im_size, im_size, 1)).cuda()], -1), -1)[0]
-            
+
     cond_2 = torch.min(torch.cat([F.relu(xs - theta[:, 0].view(-1, 1, 1)).unsqueeze(-1), torch.ones((theta.shape[0], im_size, im_size, 1)).cuda()], -1), -1)[0] * \
              torch.min(torch.cat([F.relu(theta[:, 2].view(-1, 1, 1) - xs).unsqueeze(-1), torch.ones((theta.shape[0], im_size, im_size, 1)).cuda()], -1), -1)[0]
 
@@ -967,13 +967,13 @@ def rectangle_renderer(theta, im_size=64):
     line_2 = (F.relu(torch.ones((theta.shape[0], im_size, im_size)).cuda() - torch.abs(xs + torch.ones((theta.shape[0], im_size, im_size)).cuda() - theta[:, 2].view(-1, 1, 1))) * cond_1).view(-1, im_size, im_size, 1)    # bottom
     line_3 = (F.relu(torch.ones((theta.shape[0], im_size, im_size)).cuda() - torch.abs(ys - theta[:, 1].view(-1, 1, 1))) * cond_2).view(-1, im_size, im_size, 1)        # left
     line_4 = (F.relu(torch.ones((theta.shape[0], im_size, im_size)).cuda() - torch.abs(ys - theta[:, 3].view(-1, 1, 1))) * cond_2).view(-1, im_size, im_size, 1)        # right
-            
+
     I = torch.max(torch.cat([line_1, line_2, line_3, line_4], -1), -1)[0]
-    
+
     return I
 
 def checkpoint(real_room_bb, fake_room_bb,  nodes, triples, room_to_sample, triple_to_sample, generator, exp_folder, batches_done, fake_validity, real_validity, boundary_bb, Tensor, latent_dim, out_imsize):
-    
+
     torch.save(generator.state_dict(), './checkpoints/gen_neighbour_{}_{}.pth'.format(exp_folder, batches_done))
     fake_imgs_tensor = bb_to_img(fake_room_bb.data, [nodes, triples], room_to_sample, triple_to_sample, \
                                  boundary_bb, disc_scores=fake_validity, im_size=out_imsize)
@@ -1037,7 +1037,7 @@ def checkpoint(real_room_bb, fake_room_bb,  nodes, triples, room_to_sample, trip
 #                                      transpose(2, 0, 1))/255.0)
 #     all_imgs = torch.stack(all_imgs)
 #     return all_imgs
-            
+
 
 def combine_images_bbs(bbs_batch, im_size=256):
     bbs_batch = bbs_batch.view(-1, 10, 4).detach().cpu().numpy()
@@ -1065,36 +1065,36 @@ def combine_images_maps(maps_batch, nodes_batch, edges_batch, \
     nodes_batch = nodes_batch.detach().cpu().numpy()
     edges_batch = edges_batch.detach().cpu().numpy()
     batch_size = torch.max(nd_to_sample) + 1
-    
+
     all_imgs = []
     shift = 0
     for b in range(batch_size):
         inds_nd = np.where(nd_to_sample==b)
         inds_ed = np.where(ed_to_sample==b)
-        
+
         mks = maps_batch[inds_nd]
         nds = nodes_batch[inds_nd]
         eds = edges_batch[inds_ed]
-        
+
         comb_img = np.ones((im_size, im_size, 3)) * 255
         extracted_rooms = []
         for mk, nd in zip(mks, nds):
             r =  im_size/mk.shape[-1]
-            x0, y0, x1, y1 = np.array(mask_to_bb(mk)) * r 
+            x0, y0, x1, y1 = np.array(mask_to_bb(mk)) * r
             h = x1-x0
             w = y1-y0
             if h > 0 and w > 0:
                 extracted_rooms.append([mk, (x0, y0, x1, y1), nd])
-        
+
         # draw graph
         graph_img = draw_graph(nds, eds, shift, im_size=im_size)
         shift += len(nds)
         all_imgs.append(graph_img)
-        
+
         # draw masks
         mask_img = np.ones((32, 32, 3)) * 255
         for rm in extracted_rooms:
-            mk, _, nd = rm 
+            mk, _, nd = rm
             inds = np.array(np.where(mk>0))
             _type = np.where(nd==1)[0]
             if len(_type) > 0:
@@ -1106,24 +1106,24 @@ def combine_images_maps(maps_batch, nodes_batch, edges_batch, \
         mask_img = Image.fromarray(mask_img.astype('uint8'))
         mask_img = mask_img.resize((im_size, im_size))
         all_imgs.append(torch.FloatTensor(np.array(mask_img).transpose(2, 0, 1))/255.0)
-            
+
         # draw boxes - filling
         comb_img = Image.fromarray(comb_img.astype('uint8'))
         dr = ImageDraw.Draw(comb_img)
         for rm in extracted_rooms:
-            _, rec, nd = rm 
+            _, rec, nd = rm
             dr.rectangle(tuple(rec), fill='beige')
-            
+
         # draw boxes - outline
         for rm in extracted_rooms:
-            _, rec, nd = rm 
+            _, rec, nd = rm
             _type = np.where(nd==1)[0]
             if len(_type) > 0:
                 color = ID_COLOR[_type[0] + 1]
             else:
                 color = 'black'
             dr.rectangle(tuple(rec), outline=color, width=4)
-            
+
 #         comb_img = comb_img.resize((im_size, im_size))
         all_imgs.append(torch.FloatTensor(np.array(comb_img).\
                                      astype('float').\
